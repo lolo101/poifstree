@@ -86,8 +86,8 @@ public class PoiFsTree {
 
     private static void printLowLevelProperties(DocumentInputStream inputStream) throws IOException {
         while (inputStream.available() > 0) {
-			System.out.println("- - - -");
-			System.out.println(new PropertiesEntry(inputStream));
+            System.out.println("- - - -");
+            System.out.println(new PropertiesEntry(inputStream));
         }
     }
 
