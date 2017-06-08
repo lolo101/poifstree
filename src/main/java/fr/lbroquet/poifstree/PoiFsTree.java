@@ -86,30 +86,8 @@ public class PoiFsTree {
 
     private static void printLowLevelProperties(DocumentInputStream inputStream) throws IOException {
         while (inputStream.available() > 0) {
-            int tag = inputStream.readInt();
-            int flags = inputStream.readInt();
-            int type = tag & 0x0000FFFF;
-            switch (type) {
-                case 0x0003:
-                {
-                    int value = inputStream.readInt();
-                    inputStream.readInt();
-                    dumpIntEntry(tag, flags, value);
-                }break;
-                case 0x001F:
-                case 0x0102:
-                {
-                    int size = inputStream.readInt();
-                    inputStream.readInt();
-                    dumpVariableLengthEntry(tag, flags, size);
-                }break;
-                default:
-                {
-                    byte[] value = new byte[8];
-                    inputStream.read(value);
-                    dumpUnknownEntry(tag, flags, value);
-                }
-            }
+			System.out.println("- - - -");
+			System.out.println(new PropertiesEntry(inputStream));
         }
     }
 
@@ -118,28 +96,6 @@ public class PoiFsTree {
         inputStream.read(header);
 
         for (byte b : header) {
-            System.out.printf("%02X ", b);
-        }
-        System.out.println();
-    }
-
-    private static void dumpIntEntry(int tag, int flags, int value) {
-        System.out.printf("tag  : %08X%n", tag);
-        System.out.printf("flags: %08X%n", flags);
-        System.out.printf("value: %08X%n", value);
-    }
-
-    private static void dumpVariableLengthEntry(int tag, int flags, int size) {
-        System.out.printf("tag  : %08X%n", tag);
-        System.out.printf("flags: %08X%n", flags);
-        System.out.printf("size : %08X%n", size);
-    }
-
-    private static void dumpUnknownEntry(int tag, int flags, byte[] value) {
-        System.out.printf("tag  : %08X%n", tag);
-        System.out.printf("flags: %08X%n", flags);
-        System.out.print("value: ");
-        for (byte b : value) {
             System.out.printf("%02X ", b);
         }
         System.out.println();
