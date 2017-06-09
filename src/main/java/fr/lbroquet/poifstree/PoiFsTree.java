@@ -1,8 +1,6 @@
 package fr.lbroquet.poifstree;
 
 import java.io.IOException;
-import java.util.stream.Stream;
-import org.apache.poi.poifs.dev.POIFSViewable;
 import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.apache.poi.poifs.filesystem.DocumentEntry;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
@@ -22,29 +20,14 @@ public class PoiFsTree {
     }
 
     private static void analyse(Entry node, int depth) {
+        printIndented(depth, node.getName());
         if (node.isDirectoryEntry()) {
-            printIndented(depth, node.getName());
             DirectoryEntry directory = (DirectoryEntry) node;
             directory.getEntries().forEachRemaining(e -> analyse(e, depth + 1));
         }
         if (node.isDocumentEntry()) {
             DocumentEntry document = (DocumentEntry) node;
-            analyseItem(document, depth);
             showContent(document, depth);
-        }
-    }
-
-    private static void analyseItem(Object item, int depth) {
-        if (item instanceof POIFSViewable) {
-            POIFSViewable viewable = (POIFSViewable) item;
-            printIndented(depth, viewable.getShortDescription());
-            if (viewable.preferArray()) {
-                Stream.of(viewable.getViewableArray()).forEach(e -> analyseItem(e, depth + 1));
-            } else {
-                viewable.getViewableIterator().forEachRemaining(e -> analyseItem(e, depth + 1));
-            }
-        } else {
-            printIndented(depth, item);
         }
     }
 
@@ -81,24 +64,21 @@ public class PoiFsTree {
     }
 
     private static void printTopLevelProperties(DocumentInputStream inputStream) {
-        System.out.println("Top level properties...");
+        System.out.println("Next Recipient Id : " + inputStream.readInt());
+        System.out.println("Next Attachment Id: " + inputStream.readInt());
+        System.out.println("Recipient Count   : " + inputStream.readInt());
+        System.out.println("Attachment Count  : " + inputStream.readInt());
     }
 
     private static void printLowLevelProperties(DocumentInputStream inputStream) throws IOException {
         while (inputStream.available() > 0) {
-            System.out.println("- - - -");
+            System.out.println();
             System.out.println(new PropertiesEntry(inputStream));
         }
     }
 
     private static void dumpHeader(DocumentInputStream inputStream) throws IOException {
-        byte[] header = new byte[8];
-        inputStream.read(header);
-
-        for (byte b : header) {
-            System.out.printf("%02X ", b);
-        }
-        System.out.println();
+        inputStream.read(new byte[8]);
     }
 
     private static void printText(DocumentInputStream inputStream) {
