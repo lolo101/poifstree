@@ -27,24 +27,19 @@ public class PoiFsTree {
         }
         if (node.isDocumentEntry()) {
             DocumentEntry document = (DocumentEntry) node;
-            showContent(document, depth);
+            printDocument(document, depth);
         }
     }
 
-    private static void showContent(DocumentEntry document, int depth) {
-        try (DocumentInputStream inputStream = new DocumentInputStream(document)) {
-            System.out.println("--------");
-            if (document.getName().equals("__properties_version1.0")) {
-                printProperties(inputStream, depth);
-            } else if (document.getName().endsWith("001F")) {
-                printText(inputStream);
-            } else {
-                printBinary(inputStream);
-            }
-            System.out.println("\n--------");
-        } catch (IOException ex) {
-            System.err.println(ex.getLocalizedMessage());
+    private static void printDocument(DocumentEntry document, int depth) {
+        System.out.println("--------");
+        String name = document.getName();
+        if (name.equals("__properties_version1.0")) {
+            printProperties(document, depth);
+        } else {
+            printEntry(document);
         }
+        System.out.println("--------");
     }
 
     private static void printIndented(int depth, Object value) {
@@ -54,12 +49,16 @@ public class PoiFsTree {
         System.out.println(value);
     }
 
-    private static void printProperties(DocumentInputStream inputStream, int depth) throws IOException {
-        dumpHeader(inputStream);
-        if (depth == 1) {
-            printTopLevelProperties(inputStream);
-        } else {
-            printLowLevelProperties(inputStream);
+    private static void printProperties(DocumentEntry document, int depth) {
+        try (DocumentInputStream inputStream = new DocumentInputStream(document)) {
+            dumpHeader(inputStream);
+            if (depth == 1) {
+                printTopLevelProperties(inputStream);
+            } else {
+                printLowLevelProperties(inputStream);
+            }
+        } catch (IOException ex) {
+            System.err.println(ex.getLocalizedMessage());
         }
     }
 
@@ -81,17 +80,7 @@ public class PoiFsTree {
         inputStream.read(new byte[8]);
     }
 
-    private static void printText(DocumentInputStream inputStream) {
-        while (inputStream.available() > 0) {
-            short readShort = inputStream.readShort();
-            System.out.print((char) readShort);
-        }
-    }
-
-    private static void printBinary(DocumentInputStream inputStream) {
-        while (inputStream.available() > 0) {
-            byte readByte = inputStream.readByte();
-            System.out.printf("%02X ", readByte);
-        }
+    private static void printEntry(DocumentEntry document) {
+        System.out.println(new SubstgEntry(document));
     }
 }
