@@ -3,6 +3,7 @@ package fr.lbroquet.poifstree;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
+
 import org.apache.poi.poifs.filesystem.DocumentEntry;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
 
@@ -60,11 +61,26 @@ public class SubstgEntry {
     }
 
     private static String dumpBinary(byte[] content) {
-        StringBuilder builder = new StringBuilder(content.length * 3);
-        for (byte b : content) {
-            builder.append(String.format("%02X ", b));
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < content.length; i += 16) {
+            builder.append(dumpBinaryLine(content, i)).append('\n');
         }
         return builder.toString();
+    }
+
+    private static String dumpBinaryLine(byte[] content, int i) {
+        StringBuilder octets = new StringBuilder(16 * 3);
+        StringBuilder ascii = new StringBuilder(16);
+        for (int offset = i; offset < i + 16; ++offset) {
+            if (offset < content.length) {
+                byte b = content[offset];
+                octets.append(String.format("%02X ", b));
+                ascii.append(b >= 0x20 && b < 127 ? (char) b : '.');
+            } else {
+                octets.append("   ");
+            }
+        }
+        return octets + "   " + ascii;
     }
 
     private String getTagName() {
